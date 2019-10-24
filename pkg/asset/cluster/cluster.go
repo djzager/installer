@@ -7,6 +7,9 @@ import (
 	"os"
 	"path/filepath"
 
+	"k8s.io/client-go/discovery"
+	"k8s.io/client-go/rest"
+
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
@@ -72,6 +75,24 @@ func (c *Cluster) Generate(parents asset.Parents) (err error) {
 	}
 
 	logrus.Infof("Creating infrastructure resources...")
+	logrus.Info("Breaking stuff...")
+
+	config, err := rest.InClusterConfig()
+	if err == nil {
+		logrus.Info("In cluster")
+
+		discoveryClient, err := discovery.NewDiscoveryClientForConfig(config)
+		if err != nil {
+			return errors.Wrap(err, "failed to get discovery client")
+		}
+		groups, resources, err := discoveryClient.ServerGroupsAndResources()
+		logrus.Infof("Groups: %v", groups)
+		logrus.Infof("Resources: %v", resources)
+
+		logrus.Infof("Done breaking stuff...")
+		return errors.New("Probably not safe to keep going")
+	}
+
 	if installConfig.Config.Platform.AWS != nil {
 		if err := aws.PreTerraform(context.TODO(), clusterID.InfraID, installConfig); err != nil {
 			return err

@@ -1,0 +1,48 @@
+apiVersion: hive.openshift.io/v1alpha1
+kind: ClusterDeployment
+metadata:
+  name: djzager2
+spec:
+  baseDomain: devcluster.openshift.com
+  clusterName: djzager2
+  compute:
+  - name: worker
+    platform:
+      aws:
+        rootVolume:
+          iops: 100
+          size: 22
+          type: gp2
+        type: m4.large
+    replicas: 3
+  controlPlane:
+    name: master
+    platform:
+      aws:
+        rootVolume:
+          iops: 100
+          size: 22
+          type: gp2
+        type: m4.large
+    replicas: 3
+  images:
+    installerImage: docker.io/djzager/openshift-install:hive
+    installerImagePullPolicy: Always
+  networking:
+    clusterNetworks:
+    - cidr: 10.128.0.0/14
+      hostSubnetLength: 23
+    machineCIDR: 10.0.0.0/16
+    serviceCIDR: 172.30.0.0/16
+    type: OpenShiftSDN
+  platform:
+    aws:
+      region: us-east-1
+  platformSecrets:
+    aws:
+      credentials:
+        name: mycluster-aws-creds
+  pullSecret:
+    name: mycluster-pull-secret
+  sshKey:
+    name: mycluster-ssh-key
